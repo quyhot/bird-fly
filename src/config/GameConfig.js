@@ -101,3 +101,4 @@ MW.HEIGHT = 720;
 MW.FONTCOLOR = "#1f2d96";
 MW.menuHeight = 36;
 MW.menuWidth = 123;
+MW.SCROLL_SPEED = 1

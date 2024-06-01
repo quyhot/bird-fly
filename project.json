@@ -12,6 +12,8 @@
         "src/Resource.js",
         "src/config/GameConfig.js",
         "src/SysMenu.js",
-        "src/Background.js"
+        "src/Background.js",
+        "src/Bird.js",
+        "src/Pipe.js"
     ]
 }
