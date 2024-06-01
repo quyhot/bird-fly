@@ -103,29 +103,50 @@ var SysMenu = cc.Layer.extend({
         this.addChild(this.labelScore, 10)
         this.schedule(this.initPipe, 0.5)
     },
+    randomIntFromInterval: function (min, max) { // min and max included
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    },
+    randomPipeGap: function () {
+        winSize = cc.director.getWinSize()
+        var gap = this.randomIntFromInterval(MW.MIN_GAP, MW.MAX_GAP)
+        var remainAfterGap = winSize.height - gap
+        var topY = this.randomIntFromInterval(MW.MIN_HEIGHT, remainAfterGap - MW.MIN_HEIGHT)
+        var bottomY = remainAfterGap - topY
+        return {topY, bottomY}
+    },
+    randomInterval: function () {
+        var num = Math.random()
+        return num < 0.4 ? 0.4 : num
+    },
     initPipe: function () {
         winSize = cc.director.getWinSize()
+        var y = this.randomPipeGap()
+        var scoringPoint = this.bird.getRightPointX()
         var top = {
             anchorX: 0.5,
             anchorY: 0,
             x: winSize.width,
             y: winSize.height,
-            scaleY: 0.4,
-            scaleX: 0.5
+            scaleX: 0.5,
+            scoringPoint
         }
         var bottom = {
             anchorX: 0.5,
             anchorY: 0,
             x: winSize.width,
             y: 32,
-            scaleY: 0.4,
-            scaleX: 0.5
+            scaleX: 0.5,
+            scoringPoint
         }
         var pipeTop = Pipe.create(top)
         pipeTop.setRotation(180)
         var pipeBottom = Pipe.create(bottom)
+        pipeTop.setScaleY(y.topY / pipeTop.getContentSize().height)
+        pipeBottom.setScaleY(y.bottomY / pipeBottom.getContentSize().height)
         this.addChild(pipeTop, 1)
         this.addChild(pipeBottom, 1)
+        var ranInterval = this.randomInterval()
+        this.schedule(this.initPipe, ranInterval)
     },
     removePipe(pipe) {
         this.removeChild(pipe)
@@ -201,6 +222,10 @@ var SysMenu = cc.Layer.extend({
         this.removeChild(this.labelScore)
         this.removeChild(this.labelEnter)
         this.removeChild(this.labelLose)
+    },
+    updateScore: function () {
+        this.score += 0.5
+        this.labelScore.setString('score: ' + this.score)
     }
 });
 

@@ -1,6 +1,6 @@
 var Bird = cc.Sprite.extend({
-    downSpeed: 2,
-    upSpeed: 50,
+    downSpeed: MW.DOWN_SPEED,
+    upSpeed: MW.UP_SPEED,
 
     ctor: function () {
         this._super(res.bird_png)
@@ -15,6 +15,9 @@ var Bird = cc.Sprite.extend({
             x: winSize.width / 2,
             y: winSize.height / 2
         })
+    },
+    getRightPointX: function () {
+        return this.getPositionX() - this.getAnchorPoint().x * this.getContentSize().width
     },
     down: function () {
         if (this.getPosition().y <= MW.GROUND) {

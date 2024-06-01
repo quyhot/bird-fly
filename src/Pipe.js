@@ -1,17 +1,22 @@
 var Pipe = cc.Sprite.extend({
     moveAction: null,
+    scoringPoint: null,
+    updatedPoint: false,
 
     ctor: function (args = {}) {
         this._super(res.pipe_png)
         this.init(args)
     },
-
     init: function (args) {
-        winSize = cc.director.getWinSize()
+        this.scoringPoint = args.scoringPoint
+        delete args.scoringPoint
         this.attr(args)
-        this.moveAction = new cc.MoveTo(2.5, new cc.Point(-100, this.getPositionY()))
+        this.moveAction = new cc.MoveTo(3, new cc.Point(-100, this.getPositionY()))
         this.runAction(this.moveAction)
         this.scheduleUpdate()
+    },
+    getLeftPointX: function () {
+        return this.getPositionX() + this.getAnchorPoint().x * this.getContentSize().width
     },
     update: function (dt) {
         if (stopGame) {
@@ -26,6 +31,10 @@ var Pipe = cc.Sprite.extend({
         }
         if (this.getPosition().x < -50) {
             gameLayer.removePipe(this)
+        }
+        if (this.getLeftPointX() < this.scoringPoint && !this.updatedPoint) {
+            gameLayer.updateScore()
+            this.updatedPoint = true
         }
     },
     remove: function (self) {
