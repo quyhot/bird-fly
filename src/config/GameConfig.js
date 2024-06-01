@@ -102,3 +102,10 @@ MW.FONTCOLOR = "#1f2d96";
 MW.menuHeight = 36;
 MW.menuWidth = 123;
 MW.SCROLL_SPEED = 1
+MW.GROUND = 32
+MW.BIRD = {
+    WIDTH: 32,
+    HEIGHT: 24
+}
+//
+MW.DELAY_END_TIME = 1000
