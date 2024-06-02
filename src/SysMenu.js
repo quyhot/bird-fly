@@ -22,6 +22,9 @@ var SysMenu = cc.Layer.extend({
     dashLabel: null,
     powerLabel: null,
     pauseLabel: null,
+    middlePauseLabel: null,
+    dashSkillCountDown: 0,
+    powerSkillCountDown: 0,
 
     ctor: function () {
         this._super();
@@ -101,14 +104,12 @@ var SysMenu = cc.Layer.extend({
         // setTimeout(this.countDown(this), 1000)
     },
     onStartGame: function () {
-        this.startGame = true
         this.initStartGame()
         this.scheduleUpdate()
     },
     initStartGame: function () {
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
-
         this.addChild(this.bird, 0, 1)
         this.labelScore = new cc.LabelTTF("score: " + this.score, res.flappy_ttf, 24)
         this.labelScore.attr({
@@ -118,6 +119,40 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height - 30
         })
         this.addChild(this.labelScore, 10)
+        this.dashLabel = new cc.LabelTTF("Skill A: Ready", res.flappy_ttf, 18)
+        this.dashLabel.attr({
+            anchorX: 0,
+            anchorY: 0,
+            x: 10,
+            y: 32
+        })
+        this.addChild(this.dashLabel, 10)
+        this.powerLabel = new cc.LabelTTF("Skill S: Ready", res.flappy_ttf, 18)
+        this.powerLabel.attr({
+            anchorX: 0,
+            anchorY: 0,
+            x: 10,
+            y: 62
+        })
+        this.addChild(this.powerLabel, 10)
+        this.pauseLabel = new cc.LabelTTF("D: Pause", res.flappy_ttf, 18)
+        this.pauseLabel.attr({
+            anchorX: 0,
+            anchorY: 0,
+            x: 10,
+            y: 92
+        })
+        this.addChild(this.pauseLabel, 10)
+        this.middlePauseLabel = new cc.LabelTTF("PAUSE!", res.flappy_ttf, 18)
+        this.middlePauseLabel.attr({
+            anchorX: 0.5,
+            anchorY: 0.5,
+            x: winSize.width / 2,
+            y: winSize.height / 1.5 - 50
+        })
+        this.startGame = true
+        this.powerSkillCountDown = 0
+        this.dashSkillCountDown = 0
         this.schedule(this.initPipe, 0.5)
     },
     randomIntFromInterval: function (min, max) { // min and max included
@@ -197,11 +232,31 @@ var SysMenu = cc.Layer.extend({
             usingSkill.powerSkill = false
         }
     },
+    countDownDashSkill: function () {
+        if (this.dashSkillCountDown) {
+            this.dashSkillCountDown--
+            this.dashLabel.setString('Skill A: ' + this.dashSkillCountDown)
+        } else {
+            this.dashLabel.setString('Skill A: Ready')
+        }
+    },
+    countDownPowerSkill: function () {
+        if (this.powerSkillCountDown) {
+            this.powerSkillCountDown--
+            this.powerLabel.setString('Skill S: ' + this.powerSkillCountDown)
+        } else {
+            this.powerLabel.setString('Skill S: Ready')
+        }
+    },
     dashSkill: function () {
-        usingSkill.dashSkill = true
-        this.unInitPipeAndDownInterval()
-        this.count = 3
-        this.schedule(this.countDownUsingSkill, 1)
+        if (!this.dashSkillCountDown) {
+            usingSkill.dashSkill = true
+            this.unInitPipeAndDownInterval()
+            this.count = MW.DS_USING_TIME
+            this.schedule(this.countDownUsingSkill, 1)
+            this.dashSkillCountDown = MW.DS_COUNT_DOWN
+            this.schedule(this.countDownDashSkill, 1)
+        }
     },
     genNewBird: function () {
         var birds = []
@@ -225,25 +280,36 @@ var SysMenu = cc.Layer.extend({
         this.unschedule(this.downInterval)
     },
     powerSkill: function () {
-        usingSkill.powerSkill = true
-        this.unInitPipeAndDownInterval()
-        this.bird.goToMiddle()
-        this.spritesWhenUseSkill = this.genNewBird()
-        this.count = 5
-        this.schedule(this.countDownUsingSkill, 1)
+        if (!this.powerSkillCountDown) {
+            usingSkill.powerSkill = true
+            this.unInitPipeAndDownInterval()
+            this.bird.goToMiddle()
+            this.spritesWhenUseSkill = this.genNewBird()
+            this.count = MW.PS_USING_TIME
+            this.schedule(this.countDownUsingSkill, 1)
+            this.powerSkillCountDown = MW.PS_COUNT_DOWN
+            this.schedule(this.countDownPowerSkill, 1)
+        }
     },
     pauseGame: function () {
         if (pauseGame) {
             this.scheduleUpdate()
+            this.removeChild(this.middlePauseLabel)
             if (this.count) {
                 this.schedule(this.countDownUsingSkill, 1)
             } else {
                 this.initPipeAndDownInterval()
             }
+            this.schedule(this.countDownPowerSkill, 1)
+            this.schedule(this.countDownDashSkill, 1)
         } else {
+            winSize = cc.director.getWinSize()
+            this.addChild(this.middlePauseLabel)
             this.unscheduleUpdate()
             this.unInitPipeAndDownInterval()
-            this.unschedule(this.countDownUsingSkill, 1)
+            this.unschedule(this.countDownPowerSkill)
+            this.unschedule(this.countDownUsingSkill)
+            this.unschedule(this.countDownDashSkill)
         }
         pauseGame = !pauseGame
     },
@@ -292,7 +358,12 @@ var SysMenu = cc.Layer.extend({
         stopGame = true
         this.unscheduleUpdate()
         this.unschedule(this.initPipe)
+        this.unschedule(this.countDownDashSkill)
+        this.unschedule(this.countDownPowerSkill)
         this.removeChild(this.labelScore)
+        this.removeChild(this.powerLabel)
+        this.removeChild(this.dashLabel)
+        this.removeChild(this.pauseLabel)
         this.mytimeout = setTimeout(this.initEndGameBackground, +MW.DELAY_END_TIME, this)
     },
     initEndGameBackground(layer) {
