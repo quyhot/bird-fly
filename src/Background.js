@@ -1,4 +1,5 @@
 var BackGround = cc.Sprite.extend({
+    speed: MW.SCROLL_SPEED,
 
     ctor: function () {
         this._super(res.background_png)
@@ -17,7 +18,11 @@ var BackGround = cc.Sprite.extend({
     },
     scroll: function () {
         // console.log(this.getPosition().x)
-        this.setPosition(this.getPosition().x - MW.SCROLL_SPEED, this.getPosition().y);
+        var speed = this.speed
+        if (usingSkill.dashSkill && usingSkill.powerSkill) {
+            speed = MW.DS_BG_SCROLL_SPEED
+        }
+        this.setPosition(this.getPosition().x - speed, this.getPosition().y);
         if (this.getPosition().x < 0) {
             this.setPosition(this.getPosition().x + 577, this.getPosition().y);
         }

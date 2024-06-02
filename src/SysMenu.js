@@ -1,6 +1,10 @@
 var gameLayer
 var stopGame = false
 var pauseGame = false
+var usingSkill = {
+    dashSkill: false,
+    powerSkill: false
+}
 var SysMenu = cc.Layer.extend({
     labelFiftyBird: null,
     labelEnter: null,
@@ -172,39 +176,33 @@ var SysMenu = cc.Layer.extend({
         }
     },
     update: function (dt) {
-        // console.log('dt',dt)
         this.background.scroll()
     },
     downInterval: function (dt) {
         this.bird.down(dt)
     },
-    // addTouchListener: function () {
-    //     var self = this
-    //     cc.eventManager.addListener({
-    //         event: cc.EventListener.TOUCH_ONE_BY_ONE,
-    //         swallowTouches: true,
-    //         onTouchBegan: function (touch, event) {
-    //             self.unschedule(this.downInterval)
-    //             self.hideLabel()
-    //             if (self.startGame) {
-    //                 self.bird.up()
-    //             } else {
-    //                 self.onNewGame()
-    //             }
-    //             return true
-    //         },
-    //         onTouchEnded: function (touch, event) {
-    //             if (self.startGame) {
-    //                 self.schedule(self.downInterval, 0.01)
-    //             }
-    //         }
-    //     }, this)
-    // },
+    countDownDashSkill: function (dt) {
+        if (this.count) {
+            this.count--
+        } else {
+            this.unschedule(this.countDownDashSkill)
+            this.schedule(this.initPipe, 0.5)
+            this.schedule(this.downInterval, 0.01)
+            usingSkill.dashSkill = false
+        }
+    },
     dashSkill: function () {
+        usingSkill.dashSkill = true
+        this.unschedule(this.initPipe)
+        this.unschedule(this.downInterval)
+        this.count = 3
+        this.schedule(this.countDownDashSkill, 1)
+    },
+    genNewBird: function () {
 
     },
     powerSkill: function () {
-
+        usingSkill.powerSkill = true
     },
     pauseGame: function () {
         if (pauseGame) {
@@ -223,7 +221,6 @@ var SysMenu = cc.Layer.extend({
         cc.eventManager.addListener({
             event: cc.EventListener.KEYBOARD,
             onKeyPressed: function (key, event) {
-                console.log(key)
                 if (key === MW.KEYBOARD.ENTER && !pauseGame) {
                     self.unschedule(this.downInterval)
                     self.hideLabel()
