@@ -108,10 +108,7 @@ var SysMenu = cc.Layer.extend({
     initStartGame: function () {
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
-        this.dashButton = new ccui.Button(res.bird_png)
-        this.dashButton.setTitleText('lol')
-        this.dashButton.x = 50
-        this.dashButton.y = 50
+
         this.addChild(this.bird, 0, 1)
         this.labelScore = new cc.LabelTTF("score: " + this.score, res.flappy_ttf, 24)
         this.labelScore.attr({
@@ -255,7 +252,7 @@ var SysMenu = cc.Layer.extend({
         cc.eventManager.addListener({
             event: cc.EventListener.KEYBOARD,
             onKeyPressed: function (key, event) {
-                if (key === MW.KEYBOARD.ENTER && !pauseGame) {
+                if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill) {
                     self.unschedule(this.downInterval)
                     self.hideLabel()
                     if (self.startGame) {
@@ -273,7 +270,7 @@ var SysMenu = cc.Layer.extend({
             },
             onKeyReleased: function(key, event) {
                 if (self.startGame) {
-                    if (key === MW.KEYBOARD.ENTER && !pauseGame) {
+                    if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill) {
                         self.schedule(self.downInterval, 0.01)
                     }
                 }
