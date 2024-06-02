@@ -15,9 +15,11 @@ MW.BIRD = {
 //
 MW.DELAY_END_TIME = 1000
 // pipe config
-MW.MIN_GAP = 100
-MW.MAX_GAP = 150
+MW.MIN_GAP = 150
+MW.MAX_GAP = 200
 MW.MIN_HEIGHT = 100
 // bird config
 MW.DOWN_SPEED = 2
 MW.UP_SPEED = 40
+//sound
+MW.SOUND = 1

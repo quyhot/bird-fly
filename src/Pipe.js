@@ -11,7 +11,7 @@ var Pipe = cc.Sprite.extend({
         this.scoringPoint = args.scoringPoint
         delete args.scoringPoint
         this.attr(args)
-        this.moveAction = new cc.MoveTo(3, new cc.Point(-100, this.getPositionY()))
+        this.moveAction = new cc.MoveTo(4, new cc.Point(-100, this.getPositionY()))
         this.runAction(this.moveAction)
         this.scheduleUpdate()
     },

@@ -18,6 +18,12 @@ var SysMenu = cc.Layer.extend({
         this._super();
         this.init();
     },
+    playBGMusic: function () {
+        if (MW.SOUND) {
+            cc.audioEngine.setMusicVolume(0.5);
+            cc.audioEngine.playMusic(res.marios_way_mp3, true)
+        }
+    },
     init: function () {
         this.initBackGround();
         this.onStartGame()
@@ -27,6 +33,8 @@ var SysMenu = cc.Layer.extend({
         return true;
     },
     initBackGround: function () {
+        console.log('oke')
+        this.playBGMusic()
         this.background = BackGround.create()
         this.addChild(this.background, 0, 1)
         this.ground = new cc.Sprite(res.ground_png)
@@ -162,8 +170,11 @@ var SysMenu = cc.Layer.extend({
         }
     },
     update: function (dt) {
+        // console.log('dt',dt)
         this.background.scroll()
-        this.bird.down()
+    },
+    downInterval: function (dt) {
+        this.bird.down(dt)
     },
     addTouchListener: function () {
         var self = this
@@ -171,16 +182,35 @@ var SysMenu = cc.Layer.extend({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: true,
             onTouchBegan: function (touch, event) {
+                self.unschedule(this.downInterval)
                 self.hideLabel()
                 if (self.startGame) {
                     self.bird.up()
                 } else {
                     self.onNewGame()
                 }
+                return true
+            },
+            onTouchEnded: function (touch, event) {
+                console.log('check')
+                if (self.startGame) {
+                    self.schedule(self.downInterval, 0.01)
+                }
             }
         }, this)
     },
+    playHurtMusic: function () {
+        if (MW.SOUND) {
+            cc.audioEngine.playEffect(res.hurt_wav, false)
+        }
+    },
+    playScoreMusic: function () {
+        if (MW.SOUND) {
+            cc.audioEngine.playEffect(res.score_wav, false)
+        }
+    },
     onEndGame() {
+        this.playHurtMusic()
         stopGame = true
         this.unscheduleUpdate()
         this.unschedule(this.initPipe)
@@ -189,6 +219,7 @@ var SysMenu = cc.Layer.extend({
     },
     initEndGameBackground(layer) {
         clearTimeout(layer.mytimeout)
+        layer.playScoreMusic()
         layer.removeChild(layer.bird)
         winSize = cc.director.getWinSize();
         layer.labelLose = new cc.LabelTTF('OOF! YOU LOSE!', res.flappy_ttf, 36)
@@ -199,7 +230,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5
         });
         layer.addChild(layer.labelLose, 10, 5)
-        layer.labelScore = new cc.LabelTTF('Score: ' + layer.score, res.flappy_ttf, 24)
+        layer.labelScore = new cc.LabelTTF('Score: ' + layer.score, res.font_ttf, 24)
         layer.labelScore.attr({
             anchorX: 0.5,
             anchorY: 0,
