@@ -17,9 +17,8 @@ var BackGround = cc.Sprite.extend({
         })
     },
     scroll: function () {
-        // console.log(this.getPosition().x)
         var speed = this.speed
-        if (usingSkill.dashSkill && usingSkill.powerSkill) {
+        if (usingSkill.dashSkill || usingSkill.powerSkill) {
             speed = MW.DS_BG_SCROLL_SPEED
         }
         this.setPosition(this.getPosition().x - speed, this.getPosition().y);

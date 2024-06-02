@@ -18,8 +18,10 @@ var SysMenu = cc.Layer.extend({
     labelScore: null,
     bird: null,
     mytimeout: null,
-    dashButton: null,
-    powerButton: null,
+    spritesWhenUseSkill: [],
+    dashLabel: null,
+    powerLabel: null,
+    pauseLabel: null,
 
     ctor: function () {
         this._super();
@@ -106,6 +108,10 @@ var SysMenu = cc.Layer.extend({
     initStartGame: function () {
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
+        this.dashButton = new ccui.Button(res.bird_png)
+        this.dashButton.setTitleText('lol')
+        this.dashButton.x = 50
+        this.dashButton.y = 50
         this.addChild(this.bird, 0, 1)
         this.labelScore = new cc.LabelTTF("score: " + this.score, res.flappy_ttf, 24)
         this.labelScore.attr({
@@ -181,38 +187,66 @@ var SysMenu = cc.Layer.extend({
     downInterval: function (dt) {
         this.bird.down(dt)
     },
-    countDownDashSkill: function (dt) {
+    countDownUsingSkill: function (dt) {
         if (this.count) {
             this.count--
         } else {
-            this.unschedule(this.countDownDashSkill)
-            this.schedule(this.initPipe, 0.5)
-            this.schedule(this.downInterval, 0.01)
+            this.unschedule(this.countDownUsingSkill)
+            this.initPipeAndDownInterval()
+            while (this.spritesWhenUseSkill.length) {
+                this.removeChild(this.spritesWhenUseSkill.pop())
+            }
             usingSkill.dashSkill = false
+            usingSkill.powerSkill = false
         }
     },
     dashSkill: function () {
         usingSkill.dashSkill = true
-        this.unschedule(this.initPipe)
-        this.unschedule(this.downInterval)
+        this.unInitPipeAndDownInterval()
         this.count = 3
-        this.schedule(this.countDownDashSkill, 1)
+        this.schedule(this.countDownUsingSkill, 1)
     },
     genNewBird: function () {
-
+        var birds = []
+        var winSize = cc.director.getWinSize()
+        var height = this.bird.getContentSize().height
+        birds.push(new Bird(winSize.height / 2 - height - 10))
+        birds.push(new Bird(winSize.height / 2 - 2 * height - 2 * 10))
+        birds.push(new Bird(winSize.height / 2 + height + 10))
+        birds.push(new Bird(winSize.height / 2 + 2 * height + 2 * 10))
+        for (var i = 0; i < birds.length; i++) {
+            this.addChild(birds[i])
+        }
+        return birds
+    },
+    initPipeAndDownInterval: function () {
+        this.schedule(this.initPipe, 0.5)
+        this.schedule(this.downInterval, 0.01)
+    },
+    unInitPipeAndDownInterval: function () {
+        this.unschedule(this.initPipe)
+        this.unschedule(this.downInterval)
     },
     powerSkill: function () {
         usingSkill.powerSkill = true
+        this.unInitPipeAndDownInterval()
+        this.bird.goToMiddle()
+        this.spritesWhenUseSkill = this.genNewBird()
+        this.count = 5
+        this.schedule(this.countDownUsingSkill, 1)
     },
     pauseGame: function () {
         if (pauseGame) {
             this.scheduleUpdate()
-            this.schedule(this.initPipe, 0.5)
-            this.schedule(this.downInterval, 0.01)
+            if (this.count) {
+                this.schedule(this.countDownUsingSkill, 1)
+            } else {
+                this.initPipeAndDownInterval()
+            }
         } else {
             this.unscheduleUpdate()
-            this.unschedule(this.initPipe)
-            this.unschedule(this.downInterval)
+            this.unInitPipeAndDownInterval()
+            this.unschedule(this.countDownUsingSkill, 1)
         }
         pauseGame = !pauseGame
     },
@@ -229,11 +263,11 @@ var SysMenu = cc.Layer.extend({
                     } else {
                         self.onNewGame()
                     }
-                } else if (key === MW.KEYBOARD.A && !pauseGame) {
+                } else if (key === MW.KEYBOARD.A && !pauseGame && !stopGame) {
                     self.dashSkill()
-                } else if (key === MW.KEYBOARD.S && !pauseGame) {
+                } else if (key === MW.KEYBOARD.S && !pauseGame && !stopGame) {
                     self.powerSkill()
-                } else if (key === MW.KEYBOARD.D) {
+                } else if (key === MW.KEYBOARD.D && !stopGame) {
                     self.pauseGame()
                 }
             },

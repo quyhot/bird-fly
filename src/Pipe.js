@@ -3,6 +3,7 @@ var Pipe = cc.Sprite.extend({
     scoringPoint: null,
     updatedPoint: false,
     moveDashKill: null,
+    movePowerKill: null,
 
     ctor: function (args = {}) {
         this._super(res.pipe_png)
@@ -14,13 +15,36 @@ var Pipe = cc.Sprite.extend({
         this.attr(args)
         this.moveAction = new cc.MoveBy(MW.PIPE_MOVEBY_TIME, new cc.Point(MW.PIPE_MOVEBY_X, 0))
         this.moveDashKill = new cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, new cc.Point(MW.PIPE_MOVEBY_X, 0))
+        this.movePowerKill = new cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, new cc.Point(-MW.PIPE_MOVEBY_X, 0))
         this.scheduleUpdate()
     },
     getLeftPointX: function () {
         return this.getPositionX() + this.getAnchorPoint().x * this.getContentSize().width
     },
     checkAction: function () {
-        return usingSkill.dashSkill ? this.moveDashKill : this.moveAction
+        if (usingSkill.powerSkill) {
+            return this.movePowerKill
+        } else if (usingSkill.dashSkill) {
+            return this.moveDashKill
+        } else {
+            return this.moveAction
+        }
+    },
+    checkColldide () {
+        var birdBoundingBox = gameLayer.bird.getBoundingBox()
+        var pipeBoundingBox = this.getBoundingBox()
+        if (cc.rectIntersectsRect(birdBoundingBox, pipeBoundingBox)) {
+            gameLayer.onEndGame()
+        }
+    },
+    updateScore () {
+        if (this.getLeftPointX() < this.scoringPoint && !this.updatedPoint && !usingSkill.powerSkill) {
+            gameLayer.updateScore()
+            this.updatedPoint = true
+        } else if (this.getLeftPointX() > this.scoringPoint && !this.updatedPoint && usingSkill.powerSkill) {
+            gameLayer.updateScore()
+            this.updatedPoint = true
+        }
     },
     update: function (dt) {
         if (stopGame) {
@@ -31,19 +55,12 @@ var Pipe = cc.Sprite.extend({
         if (!pauseGame) {
             this.runAction(this.checkAction())
         }
-        if (!usingSkill.dashSkill) {
-            var birdBoundingBox = gameLayer.bird.getBoundingBox()
-            var pipeBoundingBox = this.getBoundingBox()
-            if (cc.rectIntersectsRect(birdBoundingBox, pipeBoundingBox)) {
-                gameLayer.onEndGame()
-            }
+        if (!usingSkill.dashSkill && !usingSkill.powerSkill) {
+            this.checkColldide()
         }
-        if (this.getPosition().x < -50) {
+        this.updateScore()
+        if (this.getPositionX() < -50 || this.getPositionX() > cc.director.getWinSize().width + 50) {
             gameLayer.removePipe(this)
-        }
-        if (this.getLeftPointX() < this.scoringPoint && !this.updatedPoint) {
-            gameLayer.updateScore()
-            this.updatedPoint = true
         }
     },
     remove: function (self) {

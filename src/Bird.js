@@ -6,17 +6,14 @@ var Bird = cc.Sprite.extend({
     moveUp: null,
     moveDown: null,
 
-    ctor: function () {
+    ctor: function (y) {
         this._super(res.bird_png)
-        this.init()
-    },
-    init: function () {
-        winSize = cc.director.getWinSize();
+        winSize = cc.director.getWinSize()
         this.attr({
             anchorX: 0,
             anchorY: 0,
             x: winSize.width / 2,
-            y: winSize.height / 2
+            y: y || winSize.height / 2
         })
         this.rotateDown = new cc.RotateBy(0.0001, 1)
         this.rotateUp = new cc.RotateTo(0.1, -20)
@@ -25,6 +22,10 @@ var Bird = cc.Sprite.extend({
     },
     getRightPointX: function () {
         return this.getPositionX() - this.getAnchorPoint().x * this.getContentSize().width
+    },
+    goToMiddle: function () {
+        winSize = cc.director.getWinSize()
+        this.runAction(new cc.MoveTo(0.02, new cc.Point(winSize.width / 2, winSize.height / 2)))
     },
     down: function (dt) {
         if (this.getPosition().y <= MW.GROUND) {
