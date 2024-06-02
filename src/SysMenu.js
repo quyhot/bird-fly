@@ -111,7 +111,7 @@ var SysMenu = cc.Layer.extend({
     initStartGame: function () {
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
-        this.addChild(this.bird, 0, 1)
+        this.addChild(this.bird, 10, 1)
         this.labelScore = new cc.LabelTTF("score: " + this.score, res.flappy_ttf, 24)
         this.labelScore.attr({
             anchorX: 0,
@@ -254,6 +254,7 @@ var SysMenu = cc.Layer.extend({
             usingSkill.dashSkill = true
             this.unInitPipeAndDownInterval()
             this.count = MW.DS_USING_TIME
+            this.playExplosion()
             this.schedule(this.countDownUsingSkill, 1)
             this.dashSkillCountDown = MW.DS_COUNT_DOWN
             this.schedule(this.countDownDashSkill, 1)
@@ -287,6 +288,7 @@ var SysMenu = cc.Layer.extend({
             this.bird.goToMiddle()
             this.spritesWhenUseSkill = this.genNewBird()
             this.count = MW.PS_USING_TIME
+            this.playExplosion()
             this.schedule(this.countDownUsingSkill, 1)
             this.powerSkillCountDown = MW.PS_COUNT_DOWN
             this.schedule(this.countDownPowerSkill, 1)
@@ -346,6 +348,11 @@ var SysMenu = cc.Layer.extend({
     playHurtMusic: function () {
         if (MW.SOUND) {
             cc.audioEngine.playEffect(res.hurt_wav, false)
+        }
+    },
+    playExplosion: function () {
+        if (MW.SOUND) {
+            cc.audioEngine.playEffect(res.explosion, false)
         }
     },
     playScoreMusic: function () {

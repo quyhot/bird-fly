@@ -24,7 +24,7 @@ MW.PIPE_MOVEBY_TIME = 0.0004
 MW.DOWN_SPEED = 2
 MW.UP_SPEED = 40
 // sound
-MW.SOUND = 0
+MW.SOUND = 1
 // keyboard
 MW.KEYBOARD = {
     ENTER: 13,
