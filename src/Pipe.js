@@ -11,8 +11,7 @@ var Pipe = cc.Sprite.extend({
         this.scoringPoint = args.scoringPoint
         delete args.scoringPoint
         this.attr(args)
-        this.moveAction = new cc.MoveTo(4, new cc.Point(-100, this.getPositionY()))
-        this.runAction(this.moveAction)
+        this.moveAction = new cc.MoveBy(0.0004, new cc.Point(-3, 0))
         this.scheduleUpdate()
     },
     getLeftPointX: function () {
@@ -23,6 +22,9 @@ var Pipe = cc.Sprite.extend({
             this.unscheduleAllCallbacks()
             this.stopAction(this.moveAction)
             setTimeout(this.remove, MW.DELAY_END_TIME, this)
+        }
+        if (!pauseGame) {
+            this.runAction(this.moveAction)
         }
         var birdBoundingBox = gameLayer.bird.getBoundingBox()
         var pipeBoundingBox = this.getBoundingBox()

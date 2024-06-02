@@ -21,5 +21,12 @@ MW.MIN_HEIGHT = 100
 // bird config
 MW.DOWN_SPEED = 2
 MW.UP_SPEED = 40
-//sound
-MW.SOUND = 1
+// sound
+MW.SOUND = 0
+// keyboard
+MW.KEYBOARD = {
+    ENTER: 13,
+    A: 65,
+    S: 83,
+    D: 68,
+}

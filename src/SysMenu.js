@@ -1,5 +1,6 @@
 var gameLayer
 var stopGame = false
+var pauseGame = false
 var SysMenu = cc.Layer.extend({
     labelFiftyBird: null,
     labelEnter: null,
@@ -13,6 +14,8 @@ var SysMenu = cc.Layer.extend({
     labelScore: null,
     bird: null,
     mytimeout: null,
+    dashButton: null,
+    powerButton: null,
 
     ctor: function () {
         this._super();
@@ -28,12 +31,11 @@ var SysMenu = cc.Layer.extend({
         this.initBackGround();
         this.onStartGame()
         this.hideLabel()
-        this.addTouchListener();
-
+        // this.addTouchListener();
+        this.addKeyBoardListener();
         return true;
     },
     initBackGround: function () {
-        console.log('oke')
         this.playBGMusic()
         this.background = BackGround.create()
         this.addChild(this.background, 0, 1)
@@ -176,25 +178,73 @@ var SysMenu = cc.Layer.extend({
     downInterval: function (dt) {
         this.bird.down(dt)
     },
-    addTouchListener: function () {
+    // addTouchListener: function () {
+    //     var self = this
+    //     cc.eventManager.addListener({
+    //         event: cc.EventListener.TOUCH_ONE_BY_ONE,
+    //         swallowTouches: true,
+    //         onTouchBegan: function (touch, event) {
+    //             self.unschedule(this.downInterval)
+    //             self.hideLabel()
+    //             if (self.startGame) {
+    //                 self.bird.up()
+    //             } else {
+    //                 self.onNewGame()
+    //             }
+    //             return true
+    //         },
+    //         onTouchEnded: function (touch, event) {
+    //             if (self.startGame) {
+    //                 self.schedule(self.downInterval, 0.01)
+    //             }
+    //         }
+    //     }, this)
+    // },
+    dashSkill: function () {
+
+    },
+    powerSkill: function () {
+
+    },
+    pauseGame: function () {
+        if (pauseGame) {
+            this.scheduleUpdate()
+            this.schedule(this.initPipe, 0.5)
+            this.schedule(this.downInterval, 0.01)
+        } else {
+            this.unscheduleUpdate()
+            this.unschedule(this.initPipe)
+            this.unschedule(this.downInterval)
+        }
+        pauseGame = !pauseGame
+    },
+    addKeyBoardListener: function () {
         var self = this
         cc.eventManager.addListener({
-            event: cc.EventListener.TOUCH_ONE_BY_ONE,
-            swallowTouches: true,
-            onTouchBegan: function (touch, event) {
-                self.unschedule(this.downInterval)
-                self.hideLabel()
-                if (self.startGame) {
-                    self.bird.up()
-                } else {
-                    self.onNewGame()
+            event: cc.EventListener.KEYBOARD,
+            onKeyPressed: function (key, event) {
+                console.log(key)
+                if (key === MW.KEYBOARD.ENTER && !pauseGame) {
+                    self.unschedule(this.downInterval)
+                    self.hideLabel()
+                    if (self.startGame) {
+                        self.bird.up()
+                    } else {
+                        self.onNewGame()
+                    }
+                } else if (key === MW.KEYBOARD.A && !pauseGame) {
+                    self.dashSkill()
+                } else if (key === MW.KEYBOARD.S && !pauseGame) {
+                    self.powerSkill()
+                } else if (key === MW.KEYBOARD.D) {
+                    self.pauseGame()
                 }
-                return true
             },
-            onTouchEnded: function (touch, event) {
-                console.log('check')
+            onKeyReleased: function(key, event) {
                 if (self.startGame) {
-                    self.schedule(self.downInterval, 0.01)
+                    if (key === MW.KEYBOARD.ENTER && !pauseGame) {
+                        self.schedule(self.downInterval, 0.01)
+                    }
                 }
             }
         }, this)
