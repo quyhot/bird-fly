@@ -38,8 +38,8 @@ var SysMenu = cc.Layer.extend({
     },
     init: function () {
         this.initBackGround();
-        this.onStartGame()
-        this.hideLabel()
+        // this.onStartGame()
+        // this.hideLabel()
         // this.addTouchListener();
         this.addKeyBoardListener();
         return true;
@@ -87,6 +87,7 @@ var SysMenu = cc.Layer.extend({
     },
     onNewGame: function () {
         this.hideEndGameLabel()
+        this.hideLabel()
         this.score = 0
         winSize = cc.director.getWinSize();
         if (!this.labelCount) {
@@ -320,7 +321,6 @@ var SysMenu = cc.Layer.extend({
             onKeyPressed: function (key, event) {
                 if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill) {
                     self.unschedule(this.downInterval)
-                    self.hideLabel()
                     if (self.startGame) {
                         self.bird.up()
                     } else {
