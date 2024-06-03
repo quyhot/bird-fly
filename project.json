@@ -1,7 +1,7 @@
 {
     "debugMode" : 1,
     "showFPS" : true,
-    "frameRate" : 60,
+    "frameRate" : 120,
     "id" : "gameCanvas",
     "renderMode" : 0,
     "engineDir":"frameworks/cocos2d-html5",
@@ -14,6 +14,7 @@
         "src/SysMenu.js",
         "src/Background.js",
         "src/Bird.js",
-        "src/Pipe.js"
+        "src/Pipe.js",
+        "src/test.js"
     ]
 }

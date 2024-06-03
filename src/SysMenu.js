@@ -27,6 +27,8 @@ var SysMenu = cc.Layer.extend({
     dashSkillCountDown: 0,
     powerSkillCountDown: 0,
     isFirstGame: true,
+    pipePrev: true,
+    distance: 0,
 
     ctor: function () {
         this._super();
@@ -115,6 +117,7 @@ var SysMenu = cc.Layer.extend({
     },
     initStartGame: function () {
         this.startGame = true
+        this.pipePrev = null
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
         this.addChild(this.bird, 10, 1)
@@ -152,7 +155,8 @@ var SysMenu = cc.Layer.extend({
         this.addChild(this.pauseLabel, 10)
         this.powerSkillCountDown = 0
         this.dashSkillCountDown = 0
-        this.schedule(this.initPipe, 0.5)
+        // this.schedule(this.initPipe)
+        this.initPipe()
     },
     randomIntFromInterval: function (min, max) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
@@ -196,8 +200,10 @@ var SysMenu = cc.Layer.extend({
         pipeBottom.setScaleY(y.bottomY / pipeBottom.getContentSize().height)
         this.addChild(pipeTop, 1)
         this.addChild(pipeBottom, 1)
-        var ranInterval = this.randomInterval()
-        this.schedule(this.initPipe, ranInterval)
+        this.pipePrev = pipeTop
+        this.distance = this.randomIntFromInterval(pipeTop.getContentSize().width / 2 + MW.MIN_DISTANCE, pipeTop.getContentSize().width / 2 + MW.MAX_DISTANCE)
+        // var ranInterval = this.randomInterval()
+        // this.schedule(this.initPipe, ranInterval)
     },
     removePipe: function (pipe) {
         this.removeChild(pipe)
@@ -213,8 +219,14 @@ var SysMenu = cc.Layer.extend({
             this.onStartGame()
         }
     },
+    genPipe: function () {
+        if (this.pipePrev && this.pipePrev.getPositionX() < (cc.director.getWinSize().width - this.distance)) {
+            this.initPipe()
+        }
+    },
     update: function (dt) {
         this.background.scroll()
+        this.genPipe()
     },
     downInterval: function (dt) {
         this.bird.down(dt)
@@ -224,7 +236,7 @@ var SysMenu = cc.Layer.extend({
             this.count--
         } else {
             this.unschedule(this.countDownUsingSkill)
-            this.initPipeAndDownInterval()
+            this.initPipeBeforeUsingSkill()
             while (this.spritesWhenUseSkill.length) {
                 this.removeChild(this.spritesWhenUseSkill.pop())
             }
@@ -253,6 +265,7 @@ var SysMenu = cc.Layer.extend({
             usingSkill.dashSkill = true
             this.unInitPipeAndDownInterval()
             this.count = MW.DS_USING_TIME
+            this.bird.birdUseSkill()
             this.playExplosion()
             this.schedule(this.countDownUsingSkill, 1)
             this.dashSkillCountDown = MW.DS_COUNT_DOWN
@@ -272,19 +285,19 @@ var SysMenu = cc.Layer.extend({
         }
         return birds
     },
-    initPipeAndDownInterval: function () {
-        this.schedule(this.initPipe, 0.5)
-        this.schedule(this.downInterval, 0.01)
+    initPipeBeforeUsingSkill: function () {
+        this.pipePrev = null
+        this.initPipe()
     },
     unInitPipeAndDownInterval: function () {
-        this.unschedule(this.initPipe)
-        this.unschedule(this.downInterval)
+        // this.unschedule(this.initPipe)
+        // this.unschedule(this.downInterval)
     },
     powerSkill: function () {
         if (!this.powerSkillCountDown) {
             usingSkill.powerSkill = true
             this.unInitPipeAndDownInterval()
-            this.bird.goToMiddle()
+            this.bird.birdUseSkill()
             this.spritesWhenUseSkill = this.genNewBird()
             this.count = MW.PS_USING_TIME
             this.playExplosion()
@@ -301,10 +314,11 @@ var SysMenu = cc.Layer.extend({
             if (this.count) {
                 this.schedule(this.countDownUsingSkill, 1)
             } else {
-                this.initPipeAndDownInterval()
+                this.initPipeBeforeUsingSkill()
             }
             this.schedule(this.countDownPowerSkill, 1)
             this.schedule(this.countDownDashSkill, 1)
+            this.bird.scheduleUpdate()
         } else {
             winSize = cc.director.getWinSize()
             this.middlePauseLabel = new ccui.Text("PAUSE!", res.flappy_ttf, 18)
@@ -320,6 +334,7 @@ var SysMenu = cc.Layer.extend({
             this.unschedule(this.countDownPowerSkill)
             this.unschedule(this.countDownUsingSkill)
             this.unschedule(this.countDownDashSkill)
+            this.bird.unscheduleUpdate()
         }
         pauseGame = !pauseGame
     },
@@ -328,8 +343,8 @@ var SysMenu = cc.Layer.extend({
         cc.eventManager.addListener({
             event: cc.EventListener.KEYBOARD,
             onKeyPressed: function (key, event) {
-                if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill) {
-                    self.unschedule(this.downInterval)
+                if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill && !usingSkill.dashSkill) {
+                    // self.unschedule(this.downInterval)
                     if (self.startGame) {
                         self.bird.up()
                     } else {
@@ -346,7 +361,7 @@ var SysMenu = cc.Layer.extend({
             onKeyReleased: function(key, event) {
                 if (self.startGame) {
                     if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill && !stopGame) {
-                        self.schedule(self.downInterval, 0.01)
+                        // self.schedule(self.downInterval, 0.01)
                     }
                 }
             }
@@ -374,7 +389,7 @@ var SysMenu = cc.Layer.extend({
         this.unschedule(this.initPipe)
         this.unschedule(this.countDownDashSkill)
         this.unschedule(this.countDownPowerSkill)
-        this.unschedule(this.downInterval)
+        // this.unschedule(this.downInterval)
         this.removeChild(this.labelScore)
         this.removeChild(this.powerLabel)
         this.removeChild(this.dashLabel)

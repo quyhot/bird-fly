@@ -5,26 +5,65 @@ var Bird = cc.Sprite.extend({
     rotateDown: null,
     moveUp: null,
     moveDown: null,
+    g: 9.8,
+    speedCur: 0,
+    v0: 35,
 
+    // v = vi + g*t
+    calcuV: function () {
+        return this.speedCur - this.g * 0.2;
+    },
+    // s = (v*v - vi*vi) / (2 * g)
+    calcuS: function (cur, next) {
+        return - (Math.pow(next, 2) - Math.pow(cur, 2)) / (2 * this.g)
+    },
+    calcuRotate: function (cur, next) {
+        if (this.getRotation() > 0) {
+            return - 2 * (Math.pow(next, 2) - Math.pow(cur, 2)) / (2 * this.g)
+        } else {
+            return - (Math.pow(next, 2) - Math.pow(cur, 2)) / (2 * this.g)
+        }
+    },
     ctor: function (y) {
         this._super(res.bird_png)
         winSize = cc.director.getWinSize()
         this.attr({
-            anchorX: 0,
-            anchorY: 0,
+            anchorX: 0.5,
+            anchorY: 0.5,
             x: winSize.width / 2,
             y: y || winSize.height / 2
         })
-        // this.rotateDown = cc.RotateBy(0.0001, 1)
-        // this.rotateUp = cc.RotateTo(0.1, -20)
         this.moveUp = cc.MoveBy(0.02, cc.p(0, this.upSpeed))
         this.moveDown = cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
     },
     addMoveUp: function () {
-        return cc.MoveBy(0.02, cc.p(0, this.upSpeed))
+        this.speedCur = this.v0
+        this.scheduleUpdate()
     },
-    addMoveDown: function () {
-        return cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
+    birdUseSkill: function () {
+        this.goToMiddle()
+        this.setRotation(0)
+        this.unscheduleUpdate()
+    },
+    update: function (dt) {
+        var nextV = this.calcuV(dt)
+        var calcuS = this.calcuS(this.speedCur, nextV)
+        if (this.getPosition().y >= winSize.height - MW.BIRD.HEIGHT) {
+            this.setPosition(this.getPositionX(), winSize.height - MW.BIRD.HEIGHT)
+        } else if (this.getPosition().y <= MW.GROUND) {
+            this.setPosition(this.getPositionX(), MW.GROUND)
+        } else {
+            this.setPosition(this.getPositionX(), this.getPositionY() + calcuS)
+        }
+        var newRotate = this.getRotation() - this.calcuRotate(this.speedCur, nextV)
+        if (newRotate >= -30 && newRotate <= 90) {
+            this.setRotation(newRotate)
+        } else if (newRotate < -30) {
+            this.setRotation(-30)
+        } else {
+            this.setRotation(90)
+        }
+        this.speedCur = nextV
     },
     getRightPointX: function () {
         return this.getPositionX() - this.getAnchorPoint().x * this.getContentSize().width
@@ -32,34 +71,6 @@ var Bird = cc.Sprite.extend({
     goToMiddle: function () {
         winSize = cc.director.getWinSize()
         this.runAction(cc.MoveTo(0.02, cc.p(winSize.width / 2, winSize.height / 2)))
-    },
-    down: function (dt) {
-        if (this.getPosition().y <= MW.GROUND) {
-            this.setPosition(this.getPosition().x, MW.GROUND)
-        } else {
-            // console.log(dt)
-            // this.rotateDown = new cc.RotateBy(dt, -10)
-            // this.moveDown = new cc.MoveBy(dt, new cc.Point(0, this.downSpeed))
-            // var arr = []
-            // for (var i = 0; i < 10; i++) {
-            //     arr.push(this.rotateDown.clone())
-            // }
-            // var seq = new cc.Sequence(arr)
-            // if (this.checkRotation()){
-            //     this.runAction(new cc.Spawn(this.moveDown))
-            // } else {
-            //     this.runAction(new cc.Spawn(this.moveDown, seq))
-            // }
-            this.runAction(this.addMoveDown())
-        }
-    },
-    checkRotation: function () {
-        return Math.abs(this.getRotation()) >= 90;
-    },
-    setNewRotation: function (self) {
-        // if (Math.abs(self.getRotation()) >= 90) {
-        //     self.setRotation(self.getRotation() + (self.getRotation() < 0 ?  10 : - 10))
-        // }
     },
     playJumpMusic: function () {
         if (MW.SOUND) {
@@ -72,18 +83,7 @@ var Bird = cc.Sprite.extend({
             if (this.getPosition().y >= winSize.height - MW.BIRD.HEIGHT) {
                 this.setPosition(this.getPosition().x, winSize.height - MW.BIRD.HEIGHT)
             } else {
-                // var rotateUpArr = []
-                // var checkRotate = new cc.CallFunc(this.setNewRotation, this)
-                // for (var i = 0; i < 20; i++) {
-                //     rotateUpArr.push(this.rotateUp)
-                // }
-                // var delay = new cc.DelayTime(1)
-                // var seqRotate = new cc.Sequence(rotateUpArr, delay)
-                // var spawn =
-                // var a = new cc.MoveBy(0.1, new cc.Point(0, this.upSpeed))
-                // this.runAction(new cc.Spawn(this.moveUp.clone(), this.rotateUp.clone()))
-                this.playJumpMusic()
-                this.runAction(this.addMoveUp())
+                this.addMoveUp()
             }
         }
     }

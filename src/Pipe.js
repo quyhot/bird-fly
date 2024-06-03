@@ -18,25 +18,25 @@ var Pipe = cc.Sprite.extend({
         // this.movePowerKill = cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, cc.p(-MW.PIPE_MOVEBY_X, 0))
         this.scheduleUpdate()
     },
-    addMoveAction: function () {
-        return cc.MoveBy(MW.PIPE_MOVEBY_TIME, cc.p(MW.PIPE_MOVEBY_X, 0))
+    addMoveAction: function (dt) {
+        this.setPosition(Math.floor(this.getPositionX() + MW.PIPE_MOVEBY_X * dt * 100), this.getPositionY())
     },
-    addMoveDashSkill: function () {
-        return cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, cc.p(MW.PIPE_MOVEBY_X, 0))
+    addMoveDashSkill: function (dt) {
+        this.setPosition(Math.floor(this.getPositionX() + MW.DS_PIPE_MOVEBY_X * dt * 100), this.getPositionY())
     },
-    addMovePowerKill: function () {
-        return cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, cc.p(-MW.PIPE_MOVEBY_X, 0))
+    addMovePowerKill: function (dt) {
+        this.setPosition(Math.floor(this.getPositionX() + MW.DS_PIPE_MOVEBY_X * dt * 100), this.getPositionY())
     },
     getLeftPointX: function () {
         return this.getPositionX() + this.getAnchorPoint().x * this.getContentSize().width
     },
-    checkAction: function () {
+    runingPipe: function (dt) {
         if (usingSkill.powerSkill) {
-            return this.addMovePowerKill()
+            this.addMovePowerKill(dt)
         } else if (usingSkill.dashSkill) {
-            return this.addMoveDashSkill()
+            this.addMoveDashSkill(dt)
         } else {
-            return this.addMoveAction()
+            this.addMoveAction(dt)
         }
     },
     checkColldide: function () {
@@ -59,13 +59,11 @@ var Pipe = cc.Sprite.extend({
         if (stopGame) {
             this.unscheduleUpdate()
             this.unscheduleAllCallbacks()
-            // this.stopAction(this.checkAction())
             setTimeout(this.remove, MW.DELAY_END_TIME, this)
             return
         }
         if (!pauseGame) {
-            var action = this.checkAction()
-            this.runAction(action)
+            this.runingPipe(dt)
         }
         if (!usingSkill.dashSkill && !usingSkill.powerSkill) {
             this.checkColldide()
