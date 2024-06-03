@@ -15,17 +15,23 @@ var Bird = cc.Sprite.extend({
             x: winSize.width / 2,
             y: y || winSize.height / 2
         })
-        this.rotateDown = new cc.RotateBy(0.0001, 1)
-        this.rotateUp = new cc.RotateTo(0.1, -20)
-        this.moveUp = new cc.MoveBy(0.02, new cc.Point(0, this.upSpeed))
-        this.moveDown = new cc.MoveBy(0.001, new cc.Point(0, -this.downSpeed))
+        // this.rotateDown = cc.RotateBy(0.0001, 1)
+        // this.rotateUp = cc.RotateTo(0.1, -20)
+        this.moveUp = cc.MoveBy(0.02, cc.p(0, this.upSpeed))
+        this.moveDown = cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
+    },
+    addMoveUp: function () {
+        return cc.MoveBy(0.02, cc.p(0, this.upSpeed))
+    },
+    addMoveDown: function () {
+        return cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
     },
     getRightPointX: function () {
         return this.getPositionX() - this.getAnchorPoint().x * this.getContentSize().width
     },
     goToMiddle: function () {
         winSize = cc.director.getWinSize()
-        this.runAction(new cc.MoveTo(0.02, new cc.Point(winSize.width / 2, winSize.height / 2)))
+        this.runAction(cc.MoveTo(0.02, cc.p(winSize.width / 2, winSize.height / 2)))
     },
     down: function (dt) {
         if (this.getPosition().y <= MW.GROUND) {
@@ -44,7 +50,7 @@ var Bird = cc.Sprite.extend({
             // } else {
             //     this.runAction(new cc.Spawn(this.moveDown, seq))
             // }
-            this.runAction(new cc.Spawn(this.moveDown))
+            this.runAction(this.addMoveDown())
         }
     },
     checkRotation: function () {
@@ -77,7 +83,7 @@ var Bird = cc.Sprite.extend({
                 // var a = new cc.MoveBy(0.1, new cc.Point(0, this.upSpeed))
                 // this.runAction(new cc.Spawn(this.moveUp.clone(), this.rotateUp.clone()))
                 this.playJumpMusic()
-                this.runAction(new cc.Spawn(this.moveUp.clone()))
+                this.runAction(this.addMoveUp())
             }
         }
     }

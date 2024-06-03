@@ -8,6 +8,7 @@ var usingSkill = {
 var SysMenu = cc.Layer.extend({
     labelFiftyBird: null,
     labelEnter: null,
+    labelEnterWhenEndGame: null,
     labelCount: null,
     labelLose: null,
     startGame: false,
@@ -25,6 +26,7 @@ var SysMenu = cc.Layer.extend({
     middlePauseLabel: null,
     dashSkillCountDown: 0,
     powerSkillCountDown: 0,
+    isFirstGame: true,
 
     ctor: function () {
         this._super();
@@ -60,7 +62,8 @@ var SysMenu = cc.Layer.extend({
 
     initLabel: function () {
         var winSize = cc.director.getWinSize();
-        this.labelFiftyBird = new cc.LabelTTF("Fifty Bird", res.flappy_ttf, 36)
+        this.labelFiftyBird = new ccui.Text("Fifty Bird", res.flappy_ttf, 36)
+        // this.labelFiftyBird.setFontName(res.flappy_ttf)
         this.labelFiftyBird.attr({
             anchorX: 0.5,
             anchorY: 0,
@@ -68,7 +71,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5
         });
         this.addChild(this.labelFiftyBird, 0, 3)
-        this.labelEnter = new cc.LabelTTF("press enter", res.flappy_ttf, 24)
+        this.labelEnter = new ccui.Text("press enter", res.flappy_ttf, 24)
         this.labelEnter.attr({
             anchorX: 0.5,
             anchorY: 1,
@@ -81,18 +84,20 @@ var SysMenu = cc.Layer.extend({
     hideLabel: function () {
         this.removeChild(this.labelFiftyBird)
         this.removeChild(this.labelEnter)
+        this.labelFiftyBird = null
+        this.labelEnter = null
     },
     hideLabelCount: function () {
         this.removeChild(this.labelCount)
     },
     onNewGame: function () {
-        this.hideEndGameLabel()
         this.hideLabel()
+        this.hideEndGameLabel()
         this.score = 0
         winSize = cc.director.getWinSize();
         if (!this.labelCount) {
-            this.count = 5
-            this.labelCount = new cc.LabelTTF(this.count, res.flappy_ttf, 36)
+            this.count = 2
+            this.labelCount = new ccui.Text(this.count, res.flappy_ttf, 36)
             this.labelCount.attr({
                 anchorX: 0.5,
                 anchorY: 0,
@@ -109,10 +114,11 @@ var SysMenu = cc.Layer.extend({
         this.scheduleUpdate()
     },
     initStartGame: function () {
+        this.startGame = true
         winSize = cc.director.getWinSize()
         this.bird = Bird.create()
         this.addChild(this.bird, 10, 1)
-        this.labelScore = new cc.LabelTTF("score: " + this.score, res.flappy_ttf, 24)
+        this.labelScore = new ccui.Text("score: " + this.score, res.flappy_ttf, 24)
         this.labelScore.attr({
             anchorX: 0,
             anchorY: 0,
@@ -120,7 +126,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height - 30
         })
         this.addChild(this.labelScore, 10)
-        this.dashLabel = new cc.LabelTTF("Skill A: Ready", res.flappy_ttf, 18)
+        this.dashLabel = new ccui.Text("Skill A: Ready", res.flappy_ttf, 18)
         this.dashLabel.attr({
             anchorX: 0,
             anchorY: 0,
@@ -128,7 +134,7 @@ var SysMenu = cc.Layer.extend({
             y: 32
         })
         this.addChild(this.dashLabel, 10)
-        this.powerLabel = new cc.LabelTTF("Skill S: Ready", res.flappy_ttf, 18)
+        this.powerLabel = new ccui.Text("Skill S: Ready", res.flappy_ttf, 18)
         this.powerLabel.attr({
             anchorX: 0,
             anchorY: 0,
@@ -136,7 +142,7 @@ var SysMenu = cc.Layer.extend({
             y: 62
         })
         this.addChild(this.powerLabel, 10)
-        this.pauseLabel = new cc.LabelTTF("D: Pause", res.flappy_ttf, 18)
+        this.pauseLabel = new ccui.Text("D: Pause", res.flappy_ttf, 18)
         this.pauseLabel.attr({
             anchorX: 0,
             anchorY: 0,
@@ -144,14 +150,6 @@ var SysMenu = cc.Layer.extend({
             y: 92
         })
         this.addChild(this.pauseLabel, 10)
-        this.middlePauseLabel = new cc.LabelTTF("PAUSE!", res.flappy_ttf, 18)
-        this.middlePauseLabel.attr({
-            anchorX: 0.5,
-            anchorY: 0.5,
-            x: winSize.width / 2,
-            y: winSize.height / 1.5 - 50
-        })
-        this.startGame = true
         this.powerSkillCountDown = 0
         this.dashSkillCountDown = 0
         this.schedule(this.initPipe, 0.5)
@@ -201,7 +199,7 @@ var SysMenu = cc.Layer.extend({
         var ranInterval = this.randomInterval()
         this.schedule(this.initPipe, ranInterval)
     },
-    removePipe(pipe) {
+    removePipe: function (pipe) {
         this.removeChild(pipe)
     },
     countDown: function (dt) {
@@ -211,6 +209,7 @@ var SysMenu = cc.Layer.extend({
         } else {
             this.hideLabelCount()
             this.labelCount = null
+            this.unschedule(this.countDown)
             this.onStartGame()
         }
     },
@@ -298,6 +297,7 @@ var SysMenu = cc.Layer.extend({
         if (pauseGame) {
             this.scheduleUpdate()
             this.removeChild(this.middlePauseLabel)
+            this.middlePauseLabel = false
             if (this.count) {
                 this.schedule(this.countDownUsingSkill, 1)
             } else {
@@ -307,6 +307,13 @@ var SysMenu = cc.Layer.extend({
             this.schedule(this.countDownDashSkill, 1)
         } else {
             winSize = cc.director.getWinSize()
+            this.middlePauseLabel = new ccui.Text("PAUSE!", res.flappy_ttf, 18)
+            this.middlePauseLabel.attr({
+                anchorX: 0.5,
+                anchorY: 0.5,
+                x: winSize.width / 2,
+                y: winSize.height / 1.5 - 50
+            })
             this.addChild(this.middlePauseLabel)
             this.unscheduleUpdate()
             this.unInitPipeAndDownInterval()
@@ -338,7 +345,7 @@ var SysMenu = cc.Layer.extend({
             },
             onKeyReleased: function(key, event) {
                 if (self.startGame) {
-                    if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill) {
+                    if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill && !stopGame) {
                         self.schedule(self.downInterval, 0.01)
                     }
                 }
@@ -360,25 +367,26 @@ var SysMenu = cc.Layer.extend({
             cc.audioEngine.playEffect(res.score_wav, false)
         }
     },
-    onEndGame() {
-        this.playHurtMusic()
+    onEndGame: function () {
         stopGame = true
+        this.playHurtMusic()
         this.unscheduleUpdate()
         this.unschedule(this.initPipe)
         this.unschedule(this.countDownDashSkill)
         this.unschedule(this.countDownPowerSkill)
+        this.unschedule(this.downInterval)
         this.removeChild(this.labelScore)
         this.removeChild(this.powerLabel)
         this.removeChild(this.dashLabel)
         this.removeChild(this.pauseLabel)
         this.mytimeout = setTimeout(this.initEndGameBackground, +MW.DELAY_END_TIME, this)
     },
-    initEndGameBackground(layer) {
+    initEndGameBackground: function (layer) {
         clearTimeout(layer.mytimeout)
         layer.playScoreMusic()
         layer.removeChild(layer.bird)
         winSize = cc.director.getWinSize();
-        layer.labelLose = new cc.LabelTTF('OOF! YOU LOSE!', res.flappy_ttf, 36)
+        layer.labelLose = new ccui.Text('OOF! YOU LOSE!', res.flappy_ttf, 36)
         layer.labelLose.attr({
             anchorX: 0.5,
             anchorY: 0,
@@ -386,7 +394,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5
         });
         layer.addChild(layer.labelLose, 10, 5)
-        layer.labelScore = new cc.LabelTTF('Score: ' + layer.score, res.font_ttf, 24)
+        layer.labelScore = new ccui.Text('Score: ' + layer.score, res.flappy_ttf, 24)
         layer.labelScore.attr({
             anchorX: 0.5,
             anchorY: 0,
@@ -394,21 +402,25 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5 - 50
         });
         layer.addChild(layer.labelScore, 10, 5)
-        layer.labelEnter = new cc.LabelTTF('Press Enter to Play Again', res.flappy_ttf, 24)
-        layer.labelEnter.attr({
+        layer.labelEnterWhenEndGame = new ccui.Text('Press Enter to Play Again', res.flappy_ttf, 24)
+        layer.labelEnterWhenEndGame.attr({
             anchorX: 0.5,
             anchorY: 0,
             x: winSize.width / 2,
             y: winSize.height / 1.5 - 150
         });
-        layer.addChild(layer.labelEnter, 10, 5)
+        layer.addChild(layer.labelEnterWhenEndGame, 10, 5)
         stopGame = false
         layer.startGame = false
+        layer.isFirstGame = false
     },
     hideEndGameLabel: function () {
         this.removeChild(this.labelScore)
-        this.removeChild(this.labelEnter)
+        this.removeChild(this.labelEnterWhenEndGame)
         this.removeChild(this.labelLose)
+        this.labelScore = null
+        this.labelEnterWhenEndGame = null
+        this.labelLose = null
     },
     updateScore: function () {
         this.score += 0.5
