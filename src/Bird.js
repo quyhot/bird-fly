@@ -7,7 +7,7 @@ var Bird = cc.Sprite.extend({
     moveDown: null,
     g: 9.8,
     speedCur: 0,
-    v0: 35,
+    v0: 30,
 
     // v = vi + g*t
     calcuV: function (dt) {
@@ -45,10 +45,12 @@ var Bird = cc.Sprite.extend({
         this.goToMiddle()
         this.setRotation(0)
         this.unscheduleUpdate()
+        this.speedCur = 0
     },
     birdUseDashSkill: function () {
         this.setRotation(0)
         this.unscheduleUpdate()
+        this.speedCur = 0
     },
     update: function (dt) {
         var nextV = this.calcuV(dt)

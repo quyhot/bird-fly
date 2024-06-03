@@ -60,7 +60,7 @@ var SysMenu = cc.Layer.extend({
             anchorY: 0,
             scale: 2
         })
-        this.addChild(this.ground, 0, 2)
+        this.addChild(this.ground, 11, 2)
         this.initLabel()
     },
 
