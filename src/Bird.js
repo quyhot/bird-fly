@@ -10,8 +10,8 @@ var Bird = cc.Sprite.extend({
     v0: 35,
 
     // v = vi + g*t
-    calcuV: function () {
-        return this.speedCur - this.g * 0.2;
+    calcuV: function (dt) {
+        return this.speedCur - this.g * MW.BIRD_TIME * dt;
     },
     // s = (v*v - vi*vi) / (2 * g)
     calcuS: function (cur, next) {
@@ -31,7 +31,8 @@ var Bird = cc.Sprite.extend({
             anchorX: 0.5,
             anchorY: 0.5,
             x: winSize.width / 2,
-            y: y || winSize.height / 2
+            y: y || winSize.height / 2,
+            scale: 2/3
         })
         this.moveUp = cc.MoveBy(0.02, cc.p(0, this.upSpeed))
         this.moveDown = cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
@@ -40,8 +41,12 @@ var Bird = cc.Sprite.extend({
         this.speedCur = this.v0
         this.scheduleUpdate()
     },
-    birdUseSkill: function () {
+    birdUsePowerSkill: function () {
         this.goToMiddle()
+        this.setRotation(0)
+        this.unscheduleUpdate()
+    },
+    birdUseDashSkill: function () {
         this.setRotation(0)
         this.unscheduleUpdate()
     },
@@ -79,6 +84,7 @@ var Bird = cc.Sprite.extend({
     },
     up: function () {
         if (!stopGame) {
+            this.playJumpMusic()
             winSize = cc.director.getWinSize()
             if (this.getPosition().y >= winSize.height - MW.BIRD.HEIGHT) {
                 this.setPosition(this.getPosition().x, winSize.height - MW.BIRD.HEIGHT)

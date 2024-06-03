@@ -1,9 +1,6 @@
 var Pipe = cc.Sprite.extend({
-    moveAction: null,
     scoringPoint: null,
     updatedPoint: false,
-    moveDashKill: null,
-    movePowerKill: null,
 
     ctor: function (args = {}) {
         this._super(res.pipe_png)
@@ -19,13 +16,13 @@ var Pipe = cc.Sprite.extend({
         this.scheduleUpdate()
     },
     addMoveAction: function (dt) {
-        this.setPosition(Math.floor(this.getPositionX() + MW.PIPE_MOVEBY_X * dt * 100), this.getPositionY())
+        this.setPosition(Math.floor(this.getPositionX() + MW.PIPE_MOVEBY_X * dt * 80), this.getPositionY())
     },
     addMoveDashSkill: function (dt) {
-        this.setPosition(Math.floor(this.getPositionX() + MW.DS_PIPE_MOVEBY_X * dt * 100), this.getPositionY())
+        this.setPosition(Math.floor(this.getPositionX() + MW.DS_PIPE_MOVEBY_X * dt * 80), this.getPositionY())
     },
     addMovePowerKill: function (dt) {
-        this.setPosition(Math.floor(this.getPositionX() + MW.DS_PIPE_MOVEBY_X * dt * 100), this.getPositionY())
+        this.setPosition(Math.floor(this.getPositionX() + MW.PS_PIPE_MOVEBY_X * dt * 80), this.getPositionY())
     },
     getLeftPointX: function () {
         return this.getPositionX() + this.getAnchorPoint().x * this.getContentSize().width

@@ -2,6 +2,7 @@
 
 var res = {
     background_png: 'res/background.png',
+    background2_png: 'res/background-2.png',
     bird_png: 'res/bird.png',
     explosion: 'res/explosion.wav',
     flappy_ttf: 'res/flappy.ttf',

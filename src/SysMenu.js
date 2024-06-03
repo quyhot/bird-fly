@@ -51,7 +51,9 @@ var SysMenu = cc.Layer.extend({
     initBackGround: function () {
         this.playBGMusic()
         this.background = BackGround.create()
-        this.addChild(this.background, 0, 1)
+        this.addChild(this.background)
+        // this.addChild(this.background.background1, 0, 1)
+        // this.addChild(this.background.background2, 0, 1)
         this.ground = new cc.Sprite(res.ground_png)
         this.ground.attr({
             anchorX: 0,
@@ -64,7 +66,7 @@ var SysMenu = cc.Layer.extend({
 
     initLabel: function () {
         var winSize = cc.director.getWinSize();
-        this.labelFiftyBird = new ccui.Text("Fifty Bird", res.flappy_ttf, 36)
+        this.labelFiftyBird = new ccui.Text("Fifty Bird", res.flappy_ttf, 24)
         // this.labelFiftyBird.setFontName(res.flappy_ttf)
         this.labelFiftyBird.attr({
             anchorX: 0.5,
@@ -73,7 +75,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5
         });
         this.addChild(this.labelFiftyBird, 0, 3)
-        this.labelEnter = new ccui.Text("press enter", res.flappy_ttf, 24)
+        this.labelEnter = new ccui.Text("press enter", res.flappy_ttf, 18)
         this.labelEnter.attr({
             anchorX: 0.5,
             anchorY: 1,
@@ -156,7 +158,7 @@ var SysMenu = cc.Layer.extend({
         this.powerSkillCountDown = 0
         this.dashSkillCountDown = 0
         // this.schedule(this.initPipe)
-        this.initPipe()
+        // this.initPipe()
     },
     randomIntFromInterval: function (min, max) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
@@ -180,7 +182,6 @@ var SysMenu = cc.Layer.extend({
         var top = {
             anchorX: 0.5,
             anchorY: 0,
-            x: winSize.width,
             y: winSize.height,
             scaleX: 0.5,
             scoringPoint
@@ -188,20 +189,21 @@ var SysMenu = cc.Layer.extend({
         var bottom = {
             anchorX: 0.5,
             anchorY: 0,
-            x: winSize.width,
             y: 32,
             scaleX: 0.5,
             scoringPoint
         }
         var pipeTop = Pipe.create(top)
         pipeTop.setRotation(180)
+        pipeTop.setPositionX(winSize.width + pipeTop.getPositionX() * (1 - pipeTop.getAnchorPoint().x) + 40)
         var pipeBottom = Pipe.create(bottom)
+        pipeBottom.setPositionX(winSize.width + pipeBottom.getPositionX() * (1 - pipeBottom.getAnchorPoint().x) + 40)
         pipeTop.setScaleY(y.topY / pipeTop.getContentSize().height)
         pipeBottom.setScaleY(y.bottomY / pipeBottom.getContentSize().height)
         this.addChild(pipeTop, 1)
         this.addChild(pipeBottom, 1)
         this.pipePrev = pipeTop
-        this.distance = this.randomIntFromInterval(pipeTop.getContentSize().width / 2 + MW.MIN_DISTANCE, pipeTop.getContentSize().width / 2 + MW.MAX_DISTANCE)
+        this.distance = this.randomIntFromInterval(pipeTop.getContentSize().width + MW.MIN_DISTANCE, pipeTop.getContentSize().width + MW.MAX_DISTANCE)
         // var ranInterval = this.randomInterval()
         // this.schedule(this.initPipe, ranInterval)
     },
@@ -225,7 +227,6 @@ var SysMenu = cc.Layer.extend({
         }
     },
     update: function (dt) {
-        this.background.scroll()
         this.genPipe()
     },
     downInterval: function (dt) {
@@ -236,12 +237,12 @@ var SysMenu = cc.Layer.extend({
             this.count--
         } else {
             this.unschedule(this.countDownUsingSkill)
-            this.initPipeBeforeUsingSkill()
             while (this.spritesWhenUseSkill.length) {
                 this.removeChild(this.spritesWhenUseSkill.pop())
             }
             usingSkill.dashSkill = false
             usingSkill.powerSkill = false
+            if (!this.pipePrev) this.initPipe()
         }
     },
     countDownDashSkill: function () {
@@ -263,9 +264,9 @@ var SysMenu = cc.Layer.extend({
     dashSkill: function () {
         if (!this.dashSkillCountDown) {
             usingSkill.dashSkill = true
-            this.unInitPipeAndDownInterval()
+            this.pipePrev = null
             this.count = MW.DS_USING_TIME
-            this.bird.birdUseSkill()
+            this.bird.birdUseDashSkill()
             this.playExplosion()
             this.schedule(this.countDownUsingSkill, 1)
             this.dashSkillCountDown = MW.DS_COUNT_DOWN
@@ -285,19 +286,11 @@ var SysMenu = cc.Layer.extend({
         }
         return birds
     },
-    initPipeBeforeUsingSkill: function () {
-        this.pipePrev = null
-        this.initPipe()
-    },
-    unInitPipeAndDownInterval: function () {
-        // this.unschedule(this.initPipe)
-        // this.unschedule(this.downInterval)
-    },
     powerSkill: function () {
         if (!this.powerSkillCountDown) {
             usingSkill.powerSkill = true
-            this.unInitPipeAndDownInterval()
-            this.bird.birdUseSkill()
+            this.pipePrev = null
+            this.bird.birdUsePowerSkill()
             this.spritesWhenUseSkill = this.genNewBird()
             this.count = MW.PS_USING_TIME
             this.playExplosion()
@@ -308,17 +301,18 @@ var SysMenu = cc.Layer.extend({
     },
     pauseGame: function () {
         if (pauseGame) {
-            this.scheduleUpdate()
+            // this.scheduleUpdate()
             this.removeChild(this.middlePauseLabel)
             this.middlePauseLabel = false
             if (this.count) {
                 this.schedule(this.countDownUsingSkill, 1)
             } else {
-                this.initPipeBeforeUsingSkill()
+                this.scheduleUpdate()
             }
             this.schedule(this.countDownPowerSkill, 1)
             this.schedule(this.countDownDashSkill, 1)
             this.bird.scheduleUpdate()
+            this.background.scheduleUpdate()
         } else {
             winSize = cc.director.getWinSize()
             this.middlePauseLabel = new ccui.Text("PAUSE!", res.flappy_ttf, 18)
@@ -328,13 +322,13 @@ var SysMenu = cc.Layer.extend({
                 x: winSize.width / 2,
                 y: winSize.height / 1.5 - 50
             })
-            this.addChild(this.middlePauseLabel)
+            this.addChild(this.middlePauseLabel, 10)
             this.unscheduleUpdate()
-            this.unInitPipeAndDownInterval()
             this.unschedule(this.countDownPowerSkill)
             this.unschedule(this.countDownUsingSkill)
             this.unschedule(this.countDownDashSkill)
             this.bird.unscheduleUpdate()
+            this.background.unscheduleUpdate()
         }
         pauseGame = !pauseGame
     },
@@ -346,6 +340,9 @@ var SysMenu = cc.Layer.extend({
                 if (key === MW.KEYBOARD.ENTER && !pauseGame && !usingSkill.powerSkill && !usingSkill.dashSkill) {
                     // self.unschedule(this.downInterval)
                     if (self.startGame) {
+                        if (!self.pipePrev) {
+                            self.initPipe()
+                        }
                         self.bird.up()
                     } else {
                         self.onNewGame()
@@ -401,7 +398,7 @@ var SysMenu = cc.Layer.extend({
         layer.playScoreMusic()
         layer.removeChild(layer.bird)
         winSize = cc.director.getWinSize();
-        layer.labelLose = new ccui.Text('OOF! YOU LOSE!', res.flappy_ttf, 36)
+        layer.labelLose = new ccui.Text('OOF! YOU LOSE!', res.flappy_ttf, 24)
         layer.labelLose.attr({
             anchorX: 0.5,
             anchorY: 0,
@@ -409,7 +406,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5
         });
         layer.addChild(layer.labelLose, 10, 5)
-        layer.labelScore = new ccui.Text('Score: ' + layer.score, res.flappy_ttf, 24)
+        layer.labelScore = new ccui.Text('Score: ' + layer.score, res.flappy_ttf, 18)
         layer.labelScore.attr({
             anchorX: 0.5,
             anchorY: 0,
@@ -417,7 +414,7 @@ var SysMenu = cc.Layer.extend({
             y: winSize.height / 1.5 - 50
         });
         layer.addChild(layer.labelScore, 10, 5)
-        layer.labelEnterWhenEndGame = new ccui.Text('Press Enter to Play Again', res.flappy_ttf, 24)
+        layer.labelEnterWhenEndGame = new ccui.Text('Press Enter to Play Again', res.flappy_ttf, 18)
         layer.labelEnterWhenEndGame.attr({
             anchorX: 0.5,
             anchorY: 0,
