@@ -243,6 +243,7 @@ var SysMenu = cc.Layer.extend({
             usingSkill.dashSkill = false
             usingSkill.powerSkill = false
             if (!this.pipePrev) this.initPipe()
+            this.bird.scheduleUpdate()
         }
     },
     countDownDashSkill: function () {
