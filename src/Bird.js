@@ -37,6 +37,7 @@ var Bird = cc.Sprite.extend({
         this.moveUp = cc.MoveBy(0.02, cc.p(0, this.upSpeed))
         this.moveDown = cc.MoveBy(0.001, cc.p(0, -this.downSpeed))
     },
+    // press enter and bird fly and run schedule update
     addMoveUp: function () {
         this.speedCur = this.v0
         this.scheduleUpdate()
@@ -52,9 +53,11 @@ var Bird = cc.Sprite.extend({
         this.unscheduleUpdate()
         this.speedCur = 0
     },
+    // update position and rotation per dt
     update: function (dt) {
         var nextV = this.calcuV(dt)
         var calcuS = this.calcuS(this.speedCur, nextV)
+        //set position bird
         if (this.getPosition().y >= winSize.height - MW.BIRD.HEIGHT) {
             this.setPosition(this.getPositionX(), winSize.height - MW.BIRD.HEIGHT)
         } else if (this.getPosition().y <= MW.GROUND) {
@@ -62,6 +65,7 @@ var Bird = cc.Sprite.extend({
         } else {
             this.setPosition(this.getPositionX(), this.getPositionY() + calcuS)
         }
+        // set rotate bird
         var newRotate = this.getRotation() - this.calcuRotate(this.speedCur, nextV)
         if (newRotate >= -30 && newRotate <= 90) {
             this.setRotation(newRotate)
@@ -72,7 +76,8 @@ var Bird = cc.Sprite.extend({
         }
         this.speedCur = nextV
     },
-    getRightPointX: function () {
+    // the most left point of bird in x
+    getLeftPointX: function () {
         return this.getPositionX() - this.getAnchorPoint().x * this.getContentSize().width
     },
     goToMiddle: function () {
@@ -84,15 +89,12 @@ var Bird = cc.Sprite.extend({
             cc.audioEngine.playEffect(res.jump_wav, false)
         }
     },
+    // when press enter bird run up
     up: function () {
         if (!stopGame) {
             this.playJumpMusic()
             winSize = cc.director.getWinSize()
-            if (this.getPosition().y >= winSize.height - MW.BIRD.HEIGHT) {
-                this.setPosition(this.getPosition().x, winSize.height - MW.BIRD.HEIGHT)
-            } else {
-                this.addMoveUp()
-            }
+            this.addMoveUp()
         }
     }
 })

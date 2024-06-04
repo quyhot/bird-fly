@@ -11,7 +11,7 @@
     "jsList" : [
         "src/Resource.js",
         "src/config/GameConfig.js",
-        "src/SysMenu.js",
+        "src/GameLayer.js",
         "src/Background.js",
         "src/Bird.js",
         "src/Pipe.js",

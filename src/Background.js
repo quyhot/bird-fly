@@ -4,21 +4,13 @@ var BackGround = cc.Node.extend({
     background2: null,
 
     ctor: function () {
-        this._super(res.background2_png)
+        this._super()
         this.init()
         this.scheduleUpdate()
     },
-
+    // init 2 background
     init: function () {
         winSize = cc.director.getWinSize()
-        // this.attr({
-        //     anchorX: 0,
-        //     anchorY: 0,
-        //     scaleY: 1.5,
-        //     x: 0,
-        //     y: 20
-        // })
-        //
         this.background1 = new cc.Sprite(res.background2_png)
         this.background1.attr({
             anchorX: 0,
@@ -38,13 +30,15 @@ var BackGround = cc.Node.extend({
         })
         this.addChild(this.background2, 0)
     },
-    changePosition: function (background, compareBackground, speed) {
+    // change position when background run out screen
+    changePosition: function (background, compareBackground) {
         if ((background.getPosition().x + background.getContentSize().width * (1 - background.getAnchorPoint().x)) < 0) {
             background.setPosition(compareBackground.getPositionX() + compareBackground.getContentSize().width * (1 - compareBackground.getAnchorPoint().x), compareBackground.getPosition().y);
         }
     },
     update: function (dt) {
         var speed = this.speed
+        // change speed when using skill
         if (usingSkill.dashSkill || usingSkill.powerSkill) {
             speed = MW.DS_BG_SCROLL_SPEED
         }

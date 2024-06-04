@@ -5,7 +5,7 @@ var usingSkill = {
     dashSkill: false,
     powerSkill: false
 }
-var SysMenu = cc.Layer.extend({
+var GameLayer = cc.Layer.extend({
     labelFiftyBird: null,
     labelEnter: null,
     labelEnterWhenEndGame: null,
@@ -18,7 +18,6 @@ var SysMenu = cc.Layer.extend({
     score: 0,
     labelScore: null,
     bird: null,
-    mytimeout: null,
     spritesWhenUseSkill: [],
     dashLabel: null,
     powerLabel: null,
@@ -42,18 +41,14 @@ var SysMenu = cc.Layer.extend({
     },
     init: function () {
         this.initBackGround();
-        // this.onStartGame()
-        // this.hideLabel()
-        // this.addTouchListener();
         this.addKeyBoardListener();
         return true;
     },
+    // init background
     initBackGround: function () {
         this.playBGMusic()
         this.background = BackGround.create()
         this.addChild(this.background)
-        // this.addChild(this.background.background1, 0, 1)
-        // this.addChild(this.background.background2, 0, 1)
         this.ground = new cc.Sprite(res.ground_png)
         this.ground.attr({
             anchorX: 0,
@@ -63,7 +58,7 @@ var SysMenu = cc.Layer.extend({
         this.addChild(this.ground, 11, 2)
         this.initLabel()
     },
-
+    // init label when open game
     initLabel: function () {
         var winSize = cc.director.getWinSize();
         this.labelFiftyBird = new ccui.Text("Fifty Bird", res.flappy_ttf, 24)
@@ -84,7 +79,7 @@ var SysMenu = cc.Layer.extend({
         });
         this.addChild(this.labelEnter, 0, 3)
     },
-
+    //hide label when open game
     hideLabel: function () {
         this.removeChild(this.labelFiftyBird)
         this.removeChild(this.labelEnter)
@@ -94,6 +89,7 @@ var SysMenu = cc.Layer.extend({
     hideLabelCount: function () {
         this.removeChild(this.labelCount)
     },
+    // new game event
     onNewGame: function () {
         this.hideLabel()
         this.hideEndGameLabel()
@@ -110,13 +106,16 @@ var SysMenu = cc.Layer.extend({
             });
             this.addChild(this.labelCount, 0, 5)
         }
+        // count down to start game
         this.schedule(this.countDown, 1, 5);
         // setTimeout(this.countDown(this), 1000)
     },
+    // start game:
     onStartGame: function () {
         this.initStartGame()
         this.scheduleUpdate()
     },
+    // add label, bird and pipe
     initStartGame: function () {
         this.startGame = true
         this.pipePrev = null
@@ -160,9 +159,11 @@ var SysMenu = cc.Layer.extend({
         // this.schedule(this.initPipe)
         this.initPipe()
     },
+    // random from min number to max number
     randomIntFromInterval: function (min, max) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
     },
+    // random gap in y-axis
     randomPipeGap: function () {
         winSize = cc.director.getWinSize()
         var gap = this.randomIntFromInterval(MW.MIN_GAP, MW.MAX_GAP)
@@ -171,10 +172,7 @@ var SysMenu = cc.Layer.extend({
         var bottomY = remainAfterGap - topY
         return {topY, bottomY}
     },
-    randomInterval: function () {
-        var num = Math.random()
-        return num < 0.4 ? 0.4 : num
-    },
+    // gen pipe top and bottom
     initPipe: function () {
         winSize = cc.director.getWinSize()
         var y = this.randomPipeGap()
@@ -182,7 +180,7 @@ var SysMenu = cc.Layer.extend({
         pipeTop.height = y.topY
         var pipeBottom = Pipe.create()
         pipeBottom.height = y.bottomY
-        var scoringPoint = this.bird.getRightPointX()
+        var scoringPoint = this.bird.getLeftPointX()
         var top = {
             anchorX: 0.5,
             anchorY: 0,
@@ -206,6 +204,7 @@ var SysMenu = cc.Layer.extend({
     removePipe: function (pipe) {
         this.removeChild(pipe)
     },
+    // count down for start game
     countDown: function (dt) {
         if (this.count) {
             this.count--
@@ -217,6 +216,7 @@ var SysMenu = cc.Layer.extend({
             this.onStartGame()
         }
     },
+    // gen pipe when pipe run to distance
     genPipe: function () {
         if (this.pipePrev && this.pipePrev.getPositionX() < (cc.director.getWinSize().width - this.distance)) {
             this.initPipe()
@@ -225,9 +225,7 @@ var SysMenu = cc.Layer.extend({
     update: function (dt) {
         this.genPipe()
     },
-    downInterval: function (dt) {
-        this.bird.down(dt)
-    },
+    // count down when using skill: dash skill and power skill
     countDownUsingSkill: function (dt) {
         if (this.count) {
             this.count--
@@ -242,6 +240,7 @@ var SysMenu = cc.Layer.extend({
             this.bird.scheduleUpdate()
         }
     },
+    // count down to use dash skill
     countDownDashSkill: function () {
         if (this.dashSkillCountDown) {
             this.dashSkillCountDown--
@@ -250,6 +249,7 @@ var SysMenu = cc.Layer.extend({
             this.dashLabel.setString('Skill A: Ready')
         }
     },
+    // count down to use power skill
     countDownPowerSkill: function () {
         if (this.powerSkillCountDown) {
             this.powerSkillCountDown--
@@ -258,6 +258,7 @@ var SysMenu = cc.Layer.extend({
             this.powerLabel.setString('Skill S: Ready')
         }
     },
+    // dash skill handle
     dashSkill: function () {
         if (!this.dashSkillCountDown) {
             usingSkill.dashSkill = true
@@ -270,6 +271,7 @@ var SysMenu = cc.Layer.extend({
             this.schedule(this.countDownDashSkill, 1)
         }
     },
+    // gen new bird when using power skill
     genNewBird: function () {
         var birds = []
         var winSize = cc.director.getWinSize()
@@ -283,6 +285,7 @@ var SysMenu = cc.Layer.extend({
         }
         return birds
     },
+    // power skill handle
     powerSkill: function () {
         if (!this.powerSkillCountDown) {
             usingSkill.powerSkill = true
@@ -296,6 +299,7 @@ var SysMenu = cc.Layer.extend({
             this.schedule(this.countDownPowerSkill, 1)
         }
     },
+    // pause game handle
     pauseGame: function () {
         if (pauseGame) {
             // this.scheduleUpdate()
@@ -329,6 +333,7 @@ var SysMenu = cc.Layer.extend({
         }
         pauseGame = !pauseGame
     },
+    // key board listener
     addKeyBoardListener: function () {
         var self = this
         cc.eventManager.addListener({
@@ -376,6 +381,7 @@ var SysMenu = cc.Layer.extend({
             cc.audioEngine.playEffect(res.score_wav, false)
         }
     },
+    // handle end game event
     onEndGame: function () {
         stopGame = true
         this.playHurtMusic()
@@ -390,6 +396,7 @@ var SysMenu = cc.Layer.extend({
         this.removeChild(this.pauseLabel)
         this.mytimeout = setTimeout(this.initEndGameBackground, +MW.DELAY_END_TIME, this)
     },
+    // init end game background after moment
     initEndGameBackground: function (layer) {
         clearTimeout(layer.mytimeout)
         layer.playScoreMusic()
@@ -437,9 +444,9 @@ var SysMenu = cc.Layer.extend({
     }
 });
 
-SysMenu.scene = function () {
+GameLayer.scene = function () {
     var scene = new cc.Scene();
-    gameLayer = new SysMenu();
+    gameLayer = new GameLayer();
     scene.addChild(gameLayer);
     return scene;
 };

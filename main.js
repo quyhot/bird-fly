@@ -92,7 +92,7 @@ cc.game.onStart = function(){
         jsb.fileUtils.setSearchPaths(searchPaths);
     }
     cc.LoaderScene.preload(g_maingame, function () {
-        cc.director.runScene(SysMenu.scene());
+        cc.director.runScene(GameLayer.scene());
         // cc.director.runScene(Test.scene());
     }, this);
 };

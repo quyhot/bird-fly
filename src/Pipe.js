@@ -5,6 +5,7 @@ var Pipe = cc.Scale9Sprite.extend({
     ctor: function (args = {}) {
         this._super(res.pipe_png, cc.rect(0, 0, 70, 288), cc.rect(0, 40, 70, 248))
     },
+    // setup pipe
     setup: function (args) {
         this.scoringPoint = args.scoringPoint
         delete args.scoringPoint
@@ -22,7 +23,8 @@ var Pipe = cc.Scale9Sprite.extend({
     addMovePowerKill: function (dt) {
         this.setPosition(Math.floor(this.getPositionX() + MW.PS_PIPE_MOVEBY_X * dt * 80), this.getPositionY())
     },
-    getLeftPointX: function () {
+    // right point of pipe: x + anchorX * width
+    getRightPointX: function () {
         return this.getPositionX() + this.getAnchorPoint().x * this.getContentSize().width
     },
     runingPipe: function (dt) {
@@ -41,17 +43,19 @@ var Pipe = cc.Scale9Sprite.extend({
             gameLayer.onEndGame()
         }
     },
+    // update score when right point of pipe < left point of bird
     updateScore: function () {
-        if (this.getLeftPointX() < this.scoringPoint && !this.updatedPoint && !usingSkill.powerSkill) {
+        if (this.getRightPointX() < this.scoringPoint && !this.updatedPoint && !usingSkill.powerSkill) {
             gameLayer.updateScore()
             this.updatedPoint = true
-        } else if (this.getLeftPointX() > this.scoringPoint && !this.updatedPoint && usingSkill.powerSkill) {
+        } else if (this.getRightPointX() > this.scoringPoint && !this.updatedPoint && usingSkill.powerSkill) {
             gameLayer.updateScore()
             this.updatedPoint = true
         }
     },
     update: function (dt) {
         if (stopGame) {
+            // stop everything
             this.unscheduleUpdate()
             this.unscheduleAllCallbacks()
             setTimeout(this.remove, MW.DELAY_END_TIME, this)
