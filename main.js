@@ -93,6 +93,7 @@ cc.game.onStart = function(){
     }
     cc.LoaderScene.preload(g_maingame, function () {
         cc.director.runScene(SysMenu.scene());
+        // cc.director.runScene(Test.scene());
     }, this);
 };
 cc.game.run();

@@ -158,7 +158,7 @@ var SysMenu = cc.Layer.extend({
         this.powerSkillCountDown = 0
         this.dashSkillCountDown = 0
         // this.schedule(this.initPipe)
-        // this.initPipe()
+        this.initPipe()
     },
     randomIntFromInterval: function (min, max) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
@@ -178,34 +178,30 @@ var SysMenu = cc.Layer.extend({
     initPipe: function () {
         winSize = cc.director.getWinSize()
         var y = this.randomPipeGap()
+        var pipeTop = Pipe.create()
+        pipeTop.height = y.topY
+        var pipeBottom = Pipe.create()
+        pipeBottom.height = y.bottomY
         var scoringPoint = this.bird.getRightPointX()
         var top = {
             anchorX: 0.5,
             anchorY: 0,
             y: winSize.height,
-            scaleX: 0.5,
             scoringPoint
         }
         var bottom = {
             anchorX: 0.5,
             anchorY: 0,
             y: 32,
-            scaleX: 0.5,
             scoringPoint
         }
-        var pipeTop = Pipe.create(top)
+        pipeTop.setup(top)
         pipeTop.setRotation(180)
-        pipeTop.setPositionX(winSize.width + pipeTop.getPositionX() * (1 - pipeTop.getAnchorPoint().x) + 40)
-        var pipeBottom = Pipe.create(bottom)
-        pipeBottom.setPositionX(winSize.width + pipeBottom.getPositionX() * (1 - pipeBottom.getAnchorPoint().x) + 40)
-        pipeTop.setScaleY(y.topY / pipeTop.getContentSize().height)
-        pipeBottom.setScaleY(y.bottomY / pipeBottom.getContentSize().height)
+        pipeBottom.setup(bottom)
         this.addChild(pipeTop, 1)
         this.addChild(pipeBottom, 1)
         this.pipePrev = pipeTop
         this.distance = this.randomIntFromInterval(pipeTop.getContentSize().width + MW.MIN_DISTANCE, pipeTop.getContentSize().width + MW.MAX_DISTANCE)
-        // var ranInterval = this.randomInterval()
-        // this.schedule(this.initPipe, ranInterval)
     },
     removePipe: function (pipe) {
         this.removeChild(pipe)

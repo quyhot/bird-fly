@@ -5,23 +5,29 @@ var Test = cc.Layer.extend({
         this.scheduleUpdate()
     },
     init: function () {
-        var pipe = new cc.Sprite(res.pipe_png)
         winSize = cc.director.getWinSize()
-        pipe.attr({
+        var top = {
             anchorX: 0.5,
             anchorY: 0,
-            x: winSize.width,
             y: winSize.height,
-            scaleX: 0.5
-        })
-        // var pipeTop = Pipe.create(top)
-        pipe.setRotation(180)
-        this.addChild(pipe)
-        pipe.runAction(cc.MoveTo(10, cc.p(-100, pipe.getPositionY())))
+            scoringPoint: 0
+        }
+        var blocks_scaled_with_insets = new cc.Scale9Sprite(res.pipe_png, cc.rect(0, 0, 70, 288), cc.rect(0, 40, 70, 248))
+        // blocks_scaled_with_insets.updateWithBatchNode(batchNodeScale, cc.rect(0, 0, 70, 288), false, cc.rect(0, 30, 70, 288));
+        // blocks_scaled_with_insets.width = 30
+        blocks_scaled_with_insets.height = 20
+        blocks_scaled_with_insets.x = winSize.width / 2
+        blocks_scaled_with_insets.y = winSize.height / 2
+        blocks_scaled_with_insets.setRotation(180)
+
+        this.blocks_scaled_with_insets = blocks_scaled_with_insets
+        this.addChild(blocks_scaled_with_insets)
+        console.log(blocks_scaled_with_insets.getContentSize().height)
     },
 
     update: function(dt) {
-        cc.log("dt = ", dt)
+        // cc.log("dt = ", dt)
+        // this.blocks_scaled_with_insets.height -= dt * 60;
     }
 })
 

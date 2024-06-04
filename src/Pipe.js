@@ -1,18 +1,16 @@
-var Pipe = cc.Sprite.extend({
+var Pipe = cc.Scale9Sprite.extend({
     scoringPoint: null,
     updatedPoint: false,
 
     ctor: function (args = {}) {
-        this._super(res.pipe_png)
-        this.init(args)
+        this._super(res.pipe_png, cc.rect(0, 0, 70, 288), cc.rect(0, 40, 70, 248))
     },
-    init: function (args) {
+    setup: function (args) {
         this.scoringPoint = args.scoringPoint
         delete args.scoringPoint
-        this.attr(args)
-        // this.moveAction = cc.MoveBy(MW.PIPE_MOVEBY_TIME, cc.p(MW.PIPE_MOVEBY_X, 0))
-        // this.moveDashKill = cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, cc.p(MW.PIPE_MOVEBY_X, 0))
-        // this.movePowerKill = cc.MoveBy(MW.DS_PIPE_MOVEBY_TIME, cc.p(-MW.PIPE_MOVEBY_X, 0))
+        this.setAnchorPoint(args.anchorX, args.anchorY)
+        this.x = cc.director.getWinSize().width + this.getPositionX() * (1 - this.getAnchorPoint().x) + 40
+        this.y = args.y
         this.scheduleUpdate()
     },
     addMoveAction: function (dt) {
